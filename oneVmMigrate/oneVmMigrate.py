@@ -290,17 +290,17 @@ def migrateVolumes(args, volumes, stage, tout=900):
             if remoteid in recovering:
                 if recovering[remoteid]:
                     all_found = False
-                    msg = "Snapshot '{}' for Volume {} remote {} still recovering"\
+                    msg = "SnapshotId '{}' for Volume {} remote {} still recovering"\
                             .format(remoteid, name, location)
                     log(args, msg)
                 else:
-                    msg = "Snapshot Id '{}' of Volume {} remote {} is transferred"\
+                    msg = "SnapshotId '{}' of Volume {} remote {} is transferred"\
                                 .format(remoteid, name, location)
                     log(args, msg)
             else:
                 all_found = False
-                msg = "Snapshot Id {} for Volume {} not found"\
-                                .format(remoteid, name)
+                msg = "SnapshotId {} for Volume {} not found in remote {}"\
+                                .format(remoteid, name, location)
                 log(args, msg)
                 log(args, recovering, 2)
                 log(args, res, 2)
