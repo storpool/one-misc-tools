@@ -254,7 +254,7 @@ def diskVolumes(args, vm):
     log(args, volumes, 1)
     return volumes
 
-def migrateVolumes(args, volumes, stage, tout=900):
+def migrateVolumes(args, volumes, stage, tout=3600):
     location = None
     log(args, "{} - Transfer snapshots (waiting to complete)".format(stage))
 
@@ -486,10 +486,10 @@ if __name__ == '__main__':
         spVolumes = diskVolumes(args, vmData)
 
         if vmData['LCM_STATE'] != 0:
-            migrated = migrateVolumes(args, spVolumes, 'pre-snapshot')
+            migrated = migrateVolumes(args, spVolumes, 'pre-snapshot', 3600)
             oneVmUndeploy(args)
 
-        migrated = migrateVolumes(args, spVolumes, 'last-snapshot')
+        migrated = migrateVolumes(args, spVolumes, 'last-snapshot', 3600)
 
         try:
             createRemoteVolumes(args, spVolumes, migrated['backups'])
