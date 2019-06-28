@@ -204,8 +204,15 @@ def oneVmData(args):
             except:
                 pass
         vm['DISKS'].append(d)
-    msg = "VM {vm} '{n}' STATE:LCM_STATE is {s}:{l}".format(vm=args.vmid,
-            n=vm['NAME'], s=vm['STATE'], l=vm['LCM_STATE'])
+    state = vm['STATE']
+    if STATE[state] is not None:
+        state = STATE[state]
+    lcm_state = vm['LCM_STATE']
+    if LCM_STATE[lcm_state] is not None:
+        lcm_state = LCM_STATE[lcm_state]
+    vm['VM_STATE'] = "{s}:{l}".format(s=state, l=lcm_state)
+    msg = "VM {vm} '{n}' STATE:LCM_STATE is {st}".format(vm=args.vmid,
+            n=vm['NAME'], st=vm['VM_STATE'])
     log(args, msg)
     if args.verbose:
         pp(vm)
@@ -492,10 +499,10 @@ if __name__ == '__main__':
 
         oneVmUpdate(args, spVolumes)
 
-        if not args.skip_resume:
-            oneVmResume(args)
-        else:
+        if args.skip_resume or vmData['VM_STATE'] == 'UNDEPLOYED:LCM_INIT':
             log(args, "oneVmResume - skipped", 2)
+        else:
+            oneVmResume(args)
 
         renameSourceVolumes(args, spVolumes)
 
