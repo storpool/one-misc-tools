@@ -198,7 +198,7 @@ def oneVmData(args):
                 d[e] = int(disk.find(e).text)
             except:
                 pass
-        for e in ['SOURCE','CLONE','DATASTORE','IMAGE','TYPE']:
+        for e in ['SOURCE','CLONE','DATASTORE','IMAGE','TYPE', 'DISK_TYPE']:
             try:
                 d[e] = disk.find(e).text
             except:
@@ -226,7 +226,7 @@ def diskVolumes(args, vm):
             name = "one-sys-{}-{}-raw".format(
                     vm['ID'], disk['DISK_ID'])
             source = "one-ds-{}".format(disk['DATASTORE_ID'])
-        elif disk['CLONE'] == 'YES':
+        elif disk['CLONE'] == 'YES' or disk['DISK_TYPE'] == 'CDROM':
             name = "one-img-{}-{}-{}".format(
                     disk['IMAGE_ID'], vm['ID'], disk['DISK_ID'])
             source = disk['SOURCE']
@@ -237,6 +237,7 @@ def diskVolumes(args, vm):
         volumes[name] = {
             "VMID":vm['ID'],
             "SOURCE":source,
+            "DISK_TYPE":disk['DISK_TYPE'],
             "DISK_ID":disk['DISK_ID'],
             "LOCAL_DATASTORE":dsData[dsid]
             }
