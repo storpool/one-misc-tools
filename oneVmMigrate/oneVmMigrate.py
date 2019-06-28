@@ -87,7 +87,7 @@ def oneVmWaitstate(args, state, lcm_state, tout=900):
         time.sleep(2)
     
 def oneVmUndeploy(args):
-    log(args, "oneVmUndeploy - Issue VM Undeploy and wait to complete")
+    log(args, "oneVmUndeploy - Request VM Undeploy and wait to complete")
     cmd = ['onevm', 'undeploy']
     if args.force:
         cmd.append('--hard')
@@ -104,7 +104,7 @@ def oneVmUndeploy(args):
     oneVmWaitstate(args, STATE[9], LCM_STATE[0], 900)
 
 def oneVmResume(args):
-    log(args, "oneVmResume - Resume the VM (waiting to run)")
+    log(args, "oneVmResume - Request VM Resume (waiting to run)")
     cmd = ['onevm', 'resume', str(args.vmid)]
     if args.dry_run:
         out = "DRY-RUN {cmd}".format(cmd=cmd)
@@ -294,19 +294,20 @@ def migrateVolumes(args, volumes, stage, tout=900):
                             .format(remoteid, name, location)
                     log(args, msg)
                 else:
-                    msg = "Snapshot '{}' of Volume {} remote {} transferred"\
+                    msg = "Snapshot Id '{}' of Volume {} remote {} is transferred"\
                                 .format(remoteid, name, location)
-                    log(args, msg, 1)
+                    log(args, msg)
             else:
-                msg = "There is no snapshot with globalId {remoteid} for {name}"\
-                                .format(remoteid=remoteid, name=name)
+                all_found = False
+                msg = "Snapshot Id {} for Volume {} not found"\
+                                .format(remoteid, name)
                 log(args, msg)
                 log(args, recovering, 2)
                 log(args, res, 2)
         if all_found:
             return res
         if time.time() > timeout:
-            msg = "Timeout waiting for snapshots"
+            msg = "Timed out waiting for snapshots"
             log(args, msg, 2)
             raise RuntimeError(msg)
         time.sleep(3)
@@ -348,24 +349,25 @@ def createRemoteVolumes(args, vdata, mdata):
         
         new_name = 'RENAMED-{}-{}'.format(name, ts)
         tags = { "nvm": str(args.vmid), "mvts": str(ts) }
-        msg = "Rename '{old}' to '{new}', Datastore '{ds}'".format(
+        msg = "Rename '{old}' to '{new}' in datastore '{ds}'".format(
                 old=name, new=new_name, ds=vol['REMOTE_DATASTORE']['NAME'])
         log(args, msg, 1)
         renameVolume(args, name, new_name, 
                             vol['REMOTE_DATASTORE']['ENV'], tags)
-
         if args.dry_run:
             out = dumps({"DRY-RUN":"VolumeCreate:{name}".format(name=name)})
         else:
-            template = "one-ds-{ds}".format(ds=vol['REMOTE_DATASTORE']['ID'])
-            req = {"name": name,
-                "parent": byid[mdata[name]['remoteId']],
-                "template": template,
-                'tags': {"nvm": args.vmid}}
+            remote_ds = vol['REMOTE_DATASTORE']
+            template = "one-ds-{ds}".format(ds=remote_ds['ID'])
+            parent = byid[mdata[name]['remoteId']]
+            req = {"name": name, "parent": parent, "template": template,
+                            "tags": {"nvm": args.vmid}}
             cmd = ['storpool_req', '--json', dumps(req), '-P', 'VolumeCreate']
-            log(args,' '.join(cmd), 1)
-            out = run_cmd(args, cmd, vol['REMOTE_DATASTORE']['ENV'])
-        log(args, loads(out), 1)
+            msg = "Creating Volume '{v}' from '{p}' in datastore '{ds}'".format(
+                    v=name, p=parent, ds=remote_ds['NAME'])
+            log(args, msg)
+            out = run_cmd(args, cmd, remote_ds['ENV'])
+        log(args, loads(out), 2)
 
 def onedbChangeBody(args, xpath, data):
     cmd = ['onedb', 'change-body', 'vm', '--id', str(args.vmid),
