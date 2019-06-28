@@ -14,6 +14,16 @@ Optional arguments:
 -v, --verbose      - Be verbose
 -f, --force        - Do hard VM Undeploy instead of waiting for graceful
 
+
+Installing dependancies
+-------------------------------------------------------------------------------
+
+```bash
+yum -y install python-simplejson python-pip
+
+pip install -U storpool
+```
+
 OpenNebula configuration
 -------------------------------------------------------------------------------
 
