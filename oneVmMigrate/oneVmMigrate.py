@@ -308,6 +308,7 @@ def migrateVolumes(args, volumes, stage, tout=900):
 def createRemoteVolumes(args, vdata, mdata):
     log(args, "createRemoteVolumes - Create VM disk volumes on remote")
     byid = {}
+    ts = time.time()
     for name, vol in vdata.iteritems():
         if len(byid) == 0:
             for key, val in mdata.iteritems():
@@ -337,16 +338,11 @@ def createRemoteVolumes(args, vdata, mdata):
 
             if args.verbose and not args.dry_run:
                 log(args, byid)
-        try:
-            cmd = ['storpool_req', '-P', 'VolumeDelete', name]
-            if args.dry_run:
-                out = '{"DRY-RUN": "{cmd}"'.format(cmd=cmd)
-            else:
-                out = run_cmd(args, cmd, vol['REMOTE_DATASTORE']['ENV'])
-            log(args, loads(out), 1)
-        except Exception as e:
-            log(args, e, 1)
-            pass
+        
+        tags = { "nvm": str(args.vmid), "mvts": str(ts) }
+        renameVolume(args, name, 'RENAMED-{}-{}'.format(name, ts), 
+                            vol['REMOTE_DATASTORE']['ENV'], tags)
+
         if args.dry_run:
             out = dumps({"DRY-RUN":"VolumeCreate:{name}".format(name=name)})
         else:
