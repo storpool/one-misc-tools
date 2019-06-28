@@ -71,6 +71,7 @@ onedb change-body vm --id ${VM_ID} "/VM/TEMPLATE/DISK[DISK_ID=${DISK_ID}]/DATAST
 ```
 
 Optionally, on OpenNebula 5.8.3+:
+
 XPATH | Value
 -------------------------------------------------- | --------------------------------
 /VM/TEMPLATE/DISK[DISK_ID=${DISK_ID}]/CLUSTER_ID | ${DESTINATION_CLUSTER_ID}
@@ -80,9 +81,10 @@ onedb change-body vm --id ${VM_ID} "/VM/TEMPLATE/DISK[DISK_ID=${DISK_ID}]/CLUSTE
 ```
 
 The SYSTEM Datastore ID in the last History Record, identified by the biggest SEQ number is altered too:
+
 XPATH | Value
 -------------------------------------------------- | --------------------------------
-/HISTORY/DS_ID | $DESTINATION_SYSTEM_DS_ID
+HISTORY/DS_ID | $DESTINATION_SYSTEM_DS_ID
 
 ```bash
 onedb change-history --id ${VM_ID} --seq ${LAST_SEQ} "HISTORY/DS_ID" "${DESTINATION_SYSTEM_DS_ID}"
