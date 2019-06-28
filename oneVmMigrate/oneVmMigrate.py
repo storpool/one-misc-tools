@@ -263,7 +263,7 @@ def migrateVolumes(args, volumes, stage, tout=900):
     cmd = ['storpool_req', '--json', dumps(req), '-P', 'VolumesGroupBackup']
     if args.dry_run:
         pp(env)
-        log(args, 'DRU-RUN:{}'.format(' '.join(cmd)), 2)
+        log(args, 'DRY-RUN:{}'.format(' '.join(cmd)), 2)
         out = '{"backups":{}}'
     else:
         out = run_cmd(args, cmd, env)
@@ -348,7 +348,7 @@ def createRemoteVolumes(args, vdata, mdata):
             log(args, e, 1)
             pass
         if args.dry_run:
-            out = dumps({"DRU-RUN":"VolumeCreate:{name}".format(name=name)})
+            out = dumps({"DRY-RUN":"VolumeCreate:{name}".format(name=name)})
         else:
             template = "one-ds-{ds}".format(ds=vol['REMOTE_DATASTORE']['ID'])
             req = {"name": name,
