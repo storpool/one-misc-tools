@@ -419,23 +419,31 @@ def oneVmUpdate(args, volumes):
         log("WARNING! VM history record not updated!"+\
             "Probably the VM will not be re-scheduled...")
     
+def renameVolume(args, old_name, name, env, tags={}, do_raise=False):
+    try:
+        req = { "rename": name,
+                "tags": tags }
+        cmd = [ 'storpool_req', '--json', dumps(req), 
+                '-P', 'VolumeUpdate', old_name ]
+        log(args, ' '.join(cmd), 1)
+        if args.dry_run:
+            out = dumps({"DRY-RUN": "Rename volume '{old}' to '{new}'".format(
+                            old=old_name, new=name)})
+        else:
+            out = run_cmd(args, cmd, env)
+        log(args, loads(out), 1)
+    except Exception as e:
+        log(args, e, 1)
+        if do_raise:
+            raise Exception(e)
+
 def renameSourceVolumes(args, vdata):
     log(args, "renameSourceVolumes - Rename source VM's volumes")
     ts = time.time()
     for name, vol in vdata.iteritems():
-        try:
-            req = { "rename": 'MIGRATED-{}-{}'.format(name,ts),
-                    "tags": {"nvm": args.vmid, "mvts": ts}}
-            cmd = ['storpool_req', '--json', dumps(req), '-P', 'VolumeUpdate', name]
-            log(args, ' '.join(cmd), 1)
-            if args.dry_run:
-                out = '{"DRY-RUN": "{cmd}"'.format(cmd=cmd)
-            else:
-                out = run_cmd(args, cmd, vol['LOCAL_DATASTORE']['ENV'])
-            log(args, loads(out), 1)
-        except Exception as e:
-            log(args, e, 1)
-            pass
+        new_name = 'MIGRATED-{}-{}'.format(name,ts)
+        tags = {"nvm": str(args.vmid), "mvts": str(ts)}
+        renameVolume(args, name, new_name, vol['LOCAL_DATASTORE']['ENV'], tags)
 
 if __name__ == '__main__':
     import argparse
