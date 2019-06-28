@@ -339,8 +339,12 @@ def createRemoteVolumes(args, vdata, mdata):
             if args.verbose and not args.dry_run:
                 log(args, byid)
         
+        new_name = 'RENAMED-{}-{}'.format(name, ts)
         tags = { "nvm": str(args.vmid), "mvts": str(ts) }
-        renameVolume(args, name, 'RENAMED-{}-{}'.format(name, ts), 
+        msg = "Rename '{old}' to '{new}', Datastore '{ds}'".format(
+                old=name, new=new_name, ds=vol['REMOTE_DATASTORE']['NAME'])
+        log(args, msg, 1)
+        renameVolume(args, name, new_name, 
                             vol['REMOTE_DATASTORE']['ENV'], tags)
 
         if args.dry_run:
@@ -440,6 +444,9 @@ def renameSourceVolumes(args, vdata):
     for name, vol in vdata.iteritems():
         new_name = 'MIGRATED-{}-{}'.format(name,ts)
         tags = {"nvm": str(args.vmid), "mvts": str(ts)}
+        msg = "Rename '{old}' to '{new}', Datastore '{ds}'".format(
+                old=name, new=new_name, ds=vol['LOCAL_DATASTORE']['NAME'])
+        log(args, msg, 1)
         renameVolume(args, name, new_name, vol['LOCAL_DATASTORE']['ENV'], tags)
 
 if __name__ == '__main__':
