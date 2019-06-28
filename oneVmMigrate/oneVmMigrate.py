@@ -361,7 +361,7 @@ def onedbChangeBody(args, xpath, data):
             xpath, str(data)]
     log(args, ' '.join(cmd), 1)
     if args.dry_run:
-        out = "DRY-RUN {cmd}".format(cmd=cmd)
+        out = dumps({"DRY-RUN": "{x} to {v}".format(x=xpath, v=data)})
     else:
         out = run_cmd(args, cmd)
     log(args, out, 1)
@@ -371,7 +371,8 @@ def onedbChangeHistory(args, seq, xpath, data):
             '--seq',str(seq), xpath, str(data)]
     log(args, ' '.join(cmd), 1)
     if args.dry_run:
-        out = "DRY-RUN {cmd}".format(cmd=cmd)
+        out = dumps({"DRY-RUN": "SEQ:{s} {x} to {v}".format(
+                        s=seq, x=xpath, v=data)})
     else:
         out = run_cmd(args, cmd)
     log(args, out, 1)
