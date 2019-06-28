@@ -51,12 +51,12 @@ def run_cmd(args, cmd, addenv={}):
     try:
         env = environ.copy()
         env.update(addenv)
-        out = subprocess.check_output(cmd, env=env)
+        out = subprocess.check_output(cmd, env=env, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        msg = "Error:{} '{}' Returned: {}"\
-                .format(e.returncode, ' '.join(cmd), e.output)
+        msg = "run_cmd({}) exit status {}, output:'{}'"\
+                .format(' '.join(cmd), e.returncode, e.output)
         log(args, msg, 2)
-        raise Exception(msg)
+        raise e
     return out
 
 def oneVmXml(args):
