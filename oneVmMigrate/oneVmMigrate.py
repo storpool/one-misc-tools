@@ -486,7 +486,14 @@ if __name__ == '__main__':
 
         spVolumes = diskVolumes(args, vmData)
 
-        if vmData['LCM_STATE'] != 0:
+        if vmData['VM_STATE'] != 'UNDEPLOYED:LCM_INIT':
+            if vmData['VM_STATE'] not in ['ACTIVE:RUNNING', 'POWEROFF:LCM_INIT']:
+                msg = "Unsupported VM state for migration.".format(
+                        vmData['VM_STATE'])
+                msg += " UNDEPLOYED or ACTIVE expected."
+                log(args, msg)
+                exit(1)
+
             migrated = migrateVolumes(args, spVolumes, 'pre-snapshot', 3600)
             oneVmUndeploy(args)
 
