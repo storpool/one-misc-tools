@@ -476,13 +476,28 @@ if __name__ == '__main__':
 #    parser.add_argument("-t", "--undeploy-timeout", action="store_const",
 #                        default=60, help="undeploy timeout in seconds")
     parser.add_argument("vmid",type=int,help="ID of the VM to migrate")
+    parser.add_argument("cluster_id", type=int,
+                        help="destination cluster")
     try:
         args = parser.parse_args()
         if args.verbose:
             pp(args)
-        vmData = oneVmData(args)
         dsData = oneDatastoreData(args)
         clData = oneClusterData(args)
+        vmData = oneVmData(args)
+        if args.cluster_id not in clData:
+            log(args, "Please provide CLUSTER_ID")
+            exit(1)
+
+        vmData['CLUSTER_ID'] = dsData[vmData['DISKS'][0]['DATASTORE_ID']]['CLUSTERS'][0]
+        if args.cluster_id == vmData['CLUSTER_ID']:
+            log(args, "VM {} is already in cluster {} '{}'".format(args.vmid,
+                  vmData['CLUSTER_ID'], clData[vmData['CLUSTER_ID']]['NAME']))
+            exit(1)
+        else:
+            log(args,"Moving VM {} '{}' to cluster {} '{}' ...".format(
+                args.vmid, vmData['NAME'], args.cluster_id,
+                clData[args.cluster_id]['NAME']))
 
         spVolumes = diskVolumes(args, vmData)
 
