@@ -263,8 +263,10 @@ def migrateVolumes(args, volumes, stage, tout=3600):
              "tags":{"nvm":args.vmid, "cpts":time.time()},
              "volumes":[]}
     env = {}
+    env_remote = {}
     for vname, vdata in volumes.iteritems():
         env.update(vdata['LOCAL_DATASTORE']['ENV'])
+        env_remote.update(vdata['REMOTE_DATASTORE']['ENV'])
         req["volumes"].append(vname)
         location = vdata['LOCAL_DATASTORE']['SP_REMOTE']
         req["location"] = location
@@ -281,7 +283,7 @@ def migrateVolumes(args, volumes, stage, tout=3600):
     while True:
         all_found = True
         cmd = ['storpool_req', 'SnapshotsList']
-        out = run_cmd(args, cmd, env)
+        out = run_cmd(args, cmd, env_remote)
         snaps = loads(out)
         recovering = {}
         for snap in snaps:
