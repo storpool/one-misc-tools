@@ -280,6 +280,7 @@ def migrateVolumes(args, volumes, stage, tout=3600):
     res = loads(out)
     # wait for the volumes...
     timeout = time.time() + tout
+    transferred = {}
     while True:
         all_found = True
         cmd = ['storpool_req', 'SnapshotsList']
@@ -297,16 +298,16 @@ def migrateVolumes(args, volumes, stage, tout=3600):
                             .format(remoteid, name, location)
                     log(args, msg)
                 else:
-                    msg = "SnapshotId '{}' of Volume {} remote {} is transferred"\
+                    if remoteid not in transferred:
+                        msg = "SnapshotId '{}' of Volume {} remote {} is transferred"\
                                 .format(remoteid, name, location)
-                    log(args, msg)
+                        log(args, msg)
+                        transferred[remoteid] = name
             else:
                 all_found = False
                 msg = "SnapshotId {} for Volume {} not found in remote {}"\
                                 .format(remoteid, name, location)
                 log(args, msg)
-                log(args, recovering, 2)
-                log(args, res, 2)
         if all_found:
             return res
         if time.time() > timeout:
