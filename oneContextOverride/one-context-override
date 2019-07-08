@@ -89,16 +89,32 @@ function locNetwork()
 	if [ "$NEW_SUM" = "$RUN_SUM" ]; then
 		log "[$me] No changes detected"
 	else
-#		log "exec ${OVERRIDE_DIR}/${me} $@ ..."
-#		exec -a "$me" "${OVERRIDE_DIR}/${me}" "$@"
 		isBooting && command="$1" || command=
 		log "run ${OVERRIDE_DIR}/${me} $command"
 		"${OVERRIDE_DIR}/${me}" $command
 		ret=$?
 		if [ $ret -eq 0 ]; then
-			cp "$RUN_CTX" "$RUN_CTX".old
+			cp -f "$RUN_CTX" "$RUN_CTX".old
 			mv "$NEW_CTX" "$RUN_CTX"
 		fi
+	    while read -u 4 l; do
+			k="${l%%=*}"
+			[ "${k:0:4}" = "-ETH" ] || continue
+			k="${k#-}"
+			ka=(${k//_/ })
+			[ "${ka[1]:0:5}" = "ALIAS" ] || continue
+			[ "${ka[2]}" = "IP" ] || continue
+			v="${l#*=}"
+			v="${v//[\"\']/}"
+			curr="$(ip address list | grep "$v/")"
+			iparr=($curr)
+			ethdev="${iparr[${#iparr[*]}-1]}"
+			log "${curr[*]} -- $ethdev"
+			ipaddr="${iparr[1]}"
+			log "removing $ipaddr from $ethdev ..."
+			ip address del "$ipaddr" dev "$ethdev"
+			log "($?) ip address del $ipaddr dev $ethdev"
+		done 4< <(diff -u "$RUN_CTX".old "$RUN_CTX")
 		exit $ret
 	fi
 }
