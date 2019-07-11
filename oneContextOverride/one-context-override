@@ -44,8 +44,14 @@ function initOverride()
 
 function upgradeOverride()
 {
-	install -p -g root -o root -m 0755 "$0" /usr/sbin/
-	log "($?) install --compare -p -g root -o root -m 0755 $0 /usr/sbin/one-context-override"
+	local oldsum=$(getSum /usr/sbin/one-context-override)
+	local newsum=$(getSum "$0")
+	if [ "$newsum" = "$oldsum" ]; then
+		log "$0 is up to date"
+	else
+		install -p -g root -o root -m 0755 "$0" /usr/sbin/one-context-override
+		log "($?) install --compare -p -g root -o root -m 0755 $0 /usr/sbin/one-context-override"
+	fi
 	initOverride
 }
 
