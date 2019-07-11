@@ -25,6 +25,11 @@ function isBooting()
 	[ $UPTIME -le $UPTIME_THRESHOLD ]
 }
 
+function getSum()
+{
+	sha256sum "$1" | cut -d' ' -f 1
+}
+
 function initOverride()
 {
 	[ -d "${OVERRIDE_DIR}" ] || mkdir -p "${OVERRIDE_DIR}"
@@ -61,8 +66,8 @@ function locSetUsernamePassword()
 	NEW_CTX="${RUNTIME_DIR}/${me}.new"
 	grep -E 'USERNAME_SUDO|GRANT_SUDO|USERNAME_PASSWORD_RESET|USERNAME_SHELL|CRYPTED_PASSWORD_BASE64|PASSWORD_BASE64|CRYPTED_PASSWORD|PASSWORD|OVERRIDE_PASSWORD_TAG' "$CONTEXT_FILE" > "$NEW_CTX"
 	log "($?) grep -E 'USERNAME_SUDO|GRANT_SUDO|USERNAME_PASSWORD_RESET|USERNAME_SHELL|CRYPTED_PASSWORD_BASE64|PASSWORD_BASE64|CRYPTED_PASSWORD|PASSWORD|OVERRIDE_PASSWORD_TAG' $CONTEXT_FILE"
-	RUN_SUM=$(sha256sum "$RUN_CTX" | cut -d' ' -f 1)
-	NEW_SUM=$(sha256sum "$NEW_CTX" | cut -d' ' -f 1)
+	RUN_SUM=$(getSum "$RUN_CTX")
+	NEW_SUM=$(getSum "$NEW_CTX")
 	if [ "$NEW_SUM" = "$RUN_SUM" ]; then
 		log "[$me] No changes detected"
 	else
@@ -84,8 +89,8 @@ function locNetwork()
 	NEW_CTX="${RUNTIME_DIR}/${me}.new"
 	grep -E '^ETH|OVERRIDE_NETWORK_TAG' "$CONTEXT_FILE" > "$NEW_CTX"
 	log "($?) grep -E '^ETH|OVERRIDE_NETWORK_TAG' $CONTEXT_FILE"
-	RUN_SUM=$(sha256sum "$RUN_CTX" | cut -d' ' -f 1)
-	NEW_SUM=$(sha256sum "$NEW_CTX" | cut -d' ' -f 1)
+	RUN_SUM=$(getSum "$RUN_CTX")
+	NEW_SUM=$(getSum "$NEW_CTX")
 	if [ "$NEW_SUM" = "$RUN_SUM" ]; then
 		log "[$me] No changes detected"
 	else
