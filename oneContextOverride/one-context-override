@@ -9,29 +9,25 @@ OVERRIDE_DIR=/etc/one-context-override.d
 ONE_CONTEXT_D=/etc/one-context.d
 CONF=/var/one-context-override
 
-function log(){
+function log() {
 	logger -t "one-override[$$]" -- "$* // $(</proc/uptime)"
 }
 
-function getUptime()
-{
+function getUptime() {
 	local uptime="$(</proc/uptime)"
 	echo "${uptime%%.*}"
 }
 
-function isBooting()
-{
+function isBooting() {
 	UPTIME="$(getUptime)"
 	[ $UPTIME -le $UPTIME_THRESHOLD ]
 }
 
-function getSum()
-{
+function getSum() {
 	sha256sum "$1" | cut -d' ' -f 1
 }
 
-function initOverride()
-{
+function initOverride() {
 	[ -d "${OVERRIDE_DIR}" ] || mkdir -p "${OVERRIDE_DIR}"
 	while read -u 4 f; do
 		n=${f##*/}
@@ -42,8 +38,7 @@ function initOverride()
 	done 4< <(find "${ONE_CONTEXT_D}" -type f)
 }
 
-function upgradeOverride()
-{
+function upgradeOverride() {
 	local oldsum=$(getSum /usr/sbin/one-context-override)
 	local newsum=$(getSum "$0")
 	if [ "$newsum" = "$oldsum" ]; then
@@ -55,8 +50,7 @@ function upgradeOverride()
 	initOverride
 }
 
-function checkForUpdates()
-{
+function checkForUpdates() {
 	if [ -d "$MOUNT_DIR" ]; then
 		if [ -f "$MOUNT_DIR/one-context-override" ]; then
 			log "updating with $MOUNT_DIR/one-context-override"
@@ -65,8 +59,7 @@ function checkForUpdates()
 	fi
 }
 
-function locSetUsernamePassword()
-{
+function locSetUsernamePassword() {
 	RUN_CTX="${CONF}/${me}"
 	[ -f "$RUN_CTX" ] || touch "$RUN_CTX"
 	NEW_CTX="${RUNTIME_DIR}/${me}.new"
@@ -88,8 +81,7 @@ function locSetUsernamePassword()
 	fi
 }
 
-function locNetwork()
-{
+function locNetwork() {
 	RUN_CTX="${CONF}/${me}"
 	[ -f "$RUN_CTX" ] || touch "$RUN_CTX"
 	NEW_CTX="${RUNTIME_DIR}/${me}.new"
