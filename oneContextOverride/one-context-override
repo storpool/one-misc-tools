@@ -25,7 +25,23 @@ function isBooting() {
 }
 
 function getSum() {
-	sha256sum "$1" | cut -d' ' -f 1
+	local sFile="$1"
+	if [ -f "$sFile" ]; then
+		sha256sum "$sFile" | cut -d' ' -f 1
+	else
+		log "getSum($sFile) not a file"
+	fi
+}
+
+function compareFiles() {
+	local oldsum="$(getSum "$1")"
+	local newsum="$(getSum "$2")"
+	if [ -n "${oldsum}${newsum}" ] && [ "$newsum" = "$oldsum" ]; then
+		return 0
+	else
+		log "compareSums($1,$2): $oldsum <=> $newsum"
+	fi
+	return 1
 }
 
 function initOverride() {
