@@ -111,6 +111,7 @@ function locNetwork() {
 			cp -f "$RUN_CTX" "$RUN_CTX".old
 			mv "$NEW_CTX" "$RUN_CTX"
 		fi
+		# Remove missing aliases
 	    while read -u 4 l; do
 			k="${l%%=*}"
 			[ "${k:0:4}" = "-ETH" ] || continue
@@ -120,6 +121,7 @@ function locNetwork() {
 			[ "${ka[2]}" = "IP" ] || continue
 			v="${l#*=}"
 			v="${v//[\"\']/}"
+			log "'$l' -> '$v'"
 			curr="$(ip address list | grep "$v/")"
 			iparr=($curr)
 			ethdev="${iparr[${#iparr[*]}-1]}"
