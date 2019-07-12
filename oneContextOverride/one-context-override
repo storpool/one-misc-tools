@@ -10,13 +10,13 @@ OVERRIDE_DIR=/etc/one-context-override.d
 ONE_CONTEXT_D=/etc/one-context.d
 CONF=/var/one-context-override
 
-function log() {
-	logger -t "one-override[$$]" -- "$* // $(</proc/uptime)"
-}
-
 function getUptime() {
 	local uptime="$(</proc/uptime)"
 	echo "${uptime%%.*}"
+}
+
+function log() {
+	logger -t "one-override[$$]" -- "$* // uptime:$(getUptime)"
 }
 
 function isBooting() {
