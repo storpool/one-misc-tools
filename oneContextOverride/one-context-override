@@ -78,7 +78,7 @@ function locSetUsernamePassword() {
 	log "($?) grep -E 'USERNAME_SUDO|GRANT_SUDO|USERNAME_PASSWORD_RESET|USERNAME_SHELL|CRYPTED_PASSWORD_BASE64|PASSWORD_BASE64|CRYPTED_PASSWORD|PASSWORD|OVERRIDE_PASSWORD_TAG' $CONTEXT_FILE"
 	RUN_SUM=$(getSum "$RUN_CTX")
 	NEW_SUM=$(getSum "$NEW_CTX")
-	if [ "$NEW_SUM" = "$RUN_SUM" ]; then
+	if [ -n "$NEW_SUM" ] && [ "$NEW_SUM" = "$RUN_SUM" ]; then
 		log "[$me] No changes detected"
 	else
 		log "run ${OVERRIDE_DIR}/${me} $@"
@@ -100,7 +100,7 @@ function locNetwork() {
 	log "($?) grep -E '^ETH|OVERRIDE_NETWORK_TAG' $CONTEXT_FILE"
 	RUN_SUM=$(getSum "$RUN_CTX")
 	NEW_SUM=$(getSum "$NEW_CTX")
-	if [ "$NEW_SUM" = "$RUN_SUM" ]; then
+	if [ -n "$NEW_SUM" ] && [ "$NEW_SUM" = "$RUN_SUM" ]; then
 		log "[$me] No changes detected"
 	else
 		isBooting && command="$1" || command=
