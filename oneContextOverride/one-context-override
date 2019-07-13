@@ -9,6 +9,7 @@ UPTIME_THRESHOLD=${UPTIME_THRESHOLD:-120}
 OVERRIDE_DIR=/etc/one-context-override.d
 ONE_CONTEXT_D=/etc/one-context.d
 CONF=/var/one-context-override
+RUNTIME_DIR="${RUNTIME_DIR:-/var/run/one-context/}"
 
 function getUptime() {
 	local uptime="$(</proc/uptime)"
@@ -68,6 +69,18 @@ function initOverride() {
 			log "($?)ln -s $meBin ${ONE_CONTEXT_D}/${n}"
 		fi
 	done 4< <(find "${ONE_CONTEXT_D}" -type f)
+	local contextLocal="${RUNTIME_DIR}/context.sh.local"
+	local conf=
+	conf="${CONF}/loc-20-set-username-password"
+	if [ -f "$contextLocal" ] && [ ! -f "$conf" ]; then
+        grep -E 'USERNAME_SUDO|GRANT_SUDO|USERNAME_PASSWORD_RESET|USERNAME_SHELL|CRYPTED_PASSWORD_BASE64|PASSWORD_BASE64|CRYPTED_PASSWORD|PASSWORD|OVERRIDE_PASSWORD_TAG' "$contextLocal" > "$conf"
+        log "($?) grep -E 'USERNAME_SUDO|GRANT_SUDO|USERNAME_PASSWORD_RESET|USERNAME_SHELL|CRYPTED_PASSWORD_BASE64|PASSWORD_BASE64|CRYPTED_PASSWORD|PASSWORD|OVERRIDE_PASSWORD_TAG' $contextLocal > $conf"
+	fi
+	conf="${CONF}/loc-10-network"
+	if [ -f "$contextLocal" ] && [ ! -f "$conf" ]; then
+        grep -E '^ETH|OVERRIDE_NETWORK_TAG' "$contextLocal" > "$conf"
+        log "($?) grep -E '^ETH|OVERRIDE_NETWORK_TAG' $contextLocal > $conf"
+	fi
 }
 
 function locSetUsernamePassword() {
