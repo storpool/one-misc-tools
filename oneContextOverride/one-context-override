@@ -107,9 +107,12 @@ function locNetwork() {
 		log "run ${OVERRIDE_DIR}/${me} $command"
 		"${OVERRIDE_DIR}/${me}" $command
 		ret=$?
+		log "($ret)${OVERRIDE_DIR}/${me} $command"
 		if [ $ret -eq 0 ]; then
 			cp -f "$RUN_CTX" "$RUN_CTX".old
+			log "($?) cp -f $RUN_CTX ${RUN_CTX}.old"
 			mv "$NEW_CTX" "$RUN_CTX"
+			log "($?) mv $NEW_CTX $RUN_CTX"
 		fi
 		# Remove missing aliases
 	    while read -u 4 l; do
