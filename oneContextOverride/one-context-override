@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+
+me=${0##*/}
+meBin="/usr/sbin/one-context-override"
+
+UPTIME_THRESHOLD=${UPTIME_THRESHOLD//[^[:digit:]]/}
+UPTIME_THRESHOLD=${UPTIME_THRESHOLD:-120}
+
+OVERRIDE_DIR=/etc/one-context-override.d
+ONE_CONTEXT_D=/etc/one-context.d
+CONF=/var/one-context-override
+RUNTIME_DIR="${RUNTIME_DIR:-/var/run/one-context/}"
+
+function getUptime() {
+	local uptime="$(</proc/uptime)"
+	echo "${uptime%%.*}"
+}
+
+function log() {
+	logger -t "one-override[$$]" -- "$* // uptime:$(getUptime)"
+}
+
+function isBooting() {
+	UPTIME="$(getUptime)"
+	[ $UPTIME -le $UPTIME_THRESHOLD ]
+}
+
+function getSum() {
+	local sFile="$1"
+	if [ -f "$sFile" ]; then
+		sha256sum "$sFile" | cut -d' ' -f 1
+	else
+		log "getSum($sFile) not a file"
+	fi
+}
+
+function compareFiles() {
+	local oldsum="$(getSum "$1")"
+	local newsum="$(getSum "$2")"
+	if [ -n "${oldsum}${newsum}" ] && [ "$newsum" = "$oldsum" ]; then
+		return 0
+	else
+		log "compareSums($1,$2): $oldsum <=> $newsum"
+	fi
+	return 1
+}
+
+function initOverride() {
+	if [ "$1" = "upgrade" ] || [ ! -f "$meBin" ]; then
+		log "install $0 to $meBin ..."
+		install -p -g root -o root -m 0755 "$0" "$meBin"
+		log "($?) install -p -g root -o root -m 0755 $0 $meBin"
+	else
+		if [ -d "$MOUNT_DIR" ]; then
+			if [ -f "$MOUNT_DIR/one-context-override" ]; then
+				if compareFiles "$MOUNT_DIR/one-context-override" "$meBin"; then
+					log "checkForUpdates - up to date"
+				else
+					bash "$MOUNT_DIR/one-context-override" upgrade
+				fi
+			fi
+		fi
+	fi
+	[ -d "${OVERRIDE_DIR}" ] || mkdir -p "${OVERRIDE_DIR}"
+	while read -u 4 f; do
+		n="${f##*/}"
+		if mv "${f}" "${OVERRIDE_DIR}"/; then
+			ln -s "$meBin" "${ONE_CONTEXT_D}/${n}"
+			log "($?)ln -s $meBin ${ONE_CONTEXT_D}/${n}"
+		fi
+	done 4< <(find "${ONE_CONTEXT_D}" -type f)
+	local contextLocal="${RUNTIME_DIR}/context.sh.local"
+	local conf=
+	conf="${CONF}/loc-20-set-username-password"
+	if [ -f "$contextLocal" ] && [ ! -f "$conf" ]; then
+        grep -E 'USERNAME_SUDO|GRANT_SUDO|USERNAME_PASSWORD_RESET|USERNAME_SHELL|CRYPTED_PASSWORD_BASE64|PASSWORD_BASE64|CRYPTED_PASSWORD|PASSWORD|OVERRIDE_PASSWORD_TAG' "$contextLocal" > "$conf"
+        log "($?) grep -E 'USERNAME_SUDO|GRANT_SUDO|USERNAME_PASSWORD_RESET|USERNAME_SHELL|CRYPTED_PASSWORD_BASE64|PASSWORD_BASE64|CRYPTED_PASSWORD|PASSWORD|OVERRIDE_PASSWORD_TAG' $contextLocal > $conf"
+	fi
+	conf="${CONF}/loc-10-network"
+	if [ -f "$contextLocal" ] && [ ! -f "$conf" ]; then
+        grep -E '^ETH|OVERRIDE_NETWORK_TAG' "$contextLocal" > "$conf"
+        log "($?) grep -E '^ETH|OVERRIDE_NETWORK_TAG' $contextLocal > $conf"
+	fi
+}
+
+function locSetUsernamePassword() {
+	RUN_CTX="${CONF}/${me}"
+	[ -f "$RUN_CTX" ] || touch "$RUN_CTX"
+	NEW_CTX="${RUNTIME_DIR}/${me}.new"
+	grep -E 'USERNAME_SUDO|GRANT_SUDO|USERNAME_PASSWORD_RESET|USERNAME_SHELL|CRYPTED_PASSWORD_BASE64|PASSWORD_BASE64|CRYPTED_PASSWORD|PASSWORD|OVERRIDE_PASSWORD_TAG' "$CONTEXT_FILE" > "$NEW_CTX"
+	log "($?) grep -E 'USERNAME_SUDO|GRANT_SUDO|USERNAME_PASSWORD_RESET|USERNAME_SHELL|CRYPTED_PASSWORD_BASE64|PASSWORD_BASE64|CRYPTED_PASSWORD|PASSWORD|OVERRIDE_PASSWORD_TAG' $CONTEXT_FILE"
+	RUN_SUM=$(getSum "$RUN_CTX")
+	NEW_SUM=$(getSum "$NEW_CTX")
+	if [ -n "$NEW_SUM" ] && [ "$NEW_SUM" = "$RUN_SUM" ]; then
+		log "[$me] No changes detected"
+	else
+		log "run ${OVERRIDE_DIR}/${me} $@"
+		"${OVERRIDE_DIR}/${me}" "$@"
+		ret=$?
+		if [ $ret -eq 0 ]; then
+			cp "$RUN_CTX" "$RUN_CTX".old
+			mv "$NEW_CTX" "$RUN_CTX"
+		fi
+		exit $ret
+	fi
+}
+
+function locNetwork() {
+	RUN_CTX="${CONF}/${me}"
+	[ -f "$RUN_CTX" ] || touch "$RUN_CTX"
+	NEW_CTX="${RUNTIME_DIR}/${me}.new"
+	grep -E '^ETH|OVERRIDE_NETWORK_TAG' "$CONTEXT_FILE" > "$NEW_CTX"
+	log "($?) grep -E '^ETH|OVERRIDE_NETWORK_TAG' $CONTEXT_FILE"
+	RUN_SUM=$(getSum "$RUN_CTX")
+	NEW_SUM=$(getSum "$NEW_CTX")
+	if [ -n "$NEW_SUM" ] && [ "$NEW_SUM" = "$RUN_SUM" ]; then
+		log "[$me] No changes detected"
+	else
+		isBooting && command="$1" || command=
+		log "run ${OVERRIDE_DIR}/${me} $command"
+		"${OVERRIDE_DIR}/${me}" $command
+		ret=$?
+		log "($ret)${OVERRIDE_DIR}/${me} $command"
+		if [ $ret -eq 0 ]; then
+			cp -f "$RUN_CTX" "$RUN_CTX".old
+			log "($?) cp -f $RUN_CTX ${RUN_CTX}.old"
+			mv "$NEW_CTX" "$RUN_CTX"
+			log "($?) mv $NEW_CTX $RUN_CTX"
+		fi
+		# Remove missing aliases
+	    while read -u 4 l; do
+			k="${l%%=*}"
+			[ "${k:0:4}" = "-ETH" ] || continue
+			k="${k#-}"
+			ka=(${k//_/ })
+			[ "${ka[1]:0:5}" = "ALIAS" ] || continue
+			[ "${ka[2]}" = "IP" ] || continue
+			v="${l#*=}"
+			v="${v//[\"\']/}"
+			log "'$l' -> '$v'"
+			curr="$(ip address list | grep "$v/")"
+			iparr=($curr)
+			ethdev="${iparr[${#iparr[*]}-1]}"
+			log "${curr[*]} -- $ethdev"
+			ipaddr="${iparr[1]}"
+			log "removing $ipaddr from $ethdev ..."
+			ip address del "$ipaddr" dev "$ethdev"
+			log "($?) ip address del $ipaddr dev $ethdev"
+		done 4< <(diff -u "$RUN_CTX".old "$RUN_CTX")
+		exit $ret
+	fi
+}
+
+[ -z "$1" ] || log "$0 $*"
+[ -d "$CONF" ] || mkdir -p "$CONF"
+
+env >"/var/tmp/${me}.ENV"
+
+case "$me" in
+	one-context-override)
+		initOverride "$@"
+		;;
+    loc-10-network)
+		locNetwork "$@"
+		;;
+    loc-20-set-username-password)
+		locSetUsernamePassword "$@"
+		;;
+	*)
+		log "exec ${OVERRIDE_DIR}/${me} $@ ..."
+		exec -a "$me" "${OVERRIDE_DIR}/${me}" "$@"
+		;;
+esac
+
