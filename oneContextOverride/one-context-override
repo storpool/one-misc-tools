@@ -116,6 +116,13 @@ function locNetwork() {
 	if [ -n "$NEW_SUM" ] && [ "$NEW_SUM" = "$RUN_SUM" ]; then
 		log "[$me] No changes detected"
 	else
+		if [ "${NETCONFIG_ON_INSTANTIATE_ONLY^^}" = "YES" ]; then
+			local ifcfg=/etc/sysconfig/network-scripts/ifcfg-eth0
+			if [ -f "$ifcfg" ] && egrep -q "^IPADDR=$ETH0_IP" "$ifcfg" ; then
+				log "$ETH0_IP exists in $ifcfg. Quitting."
+				exit 0
+			fi
+		fi
 		isBooting && command="$1" || command=
 		log "run ${OVERRIDE_DIR}/${me} $command"
 		"${OVERRIDE_DIR}/${me}" $command
