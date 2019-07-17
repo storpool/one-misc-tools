@@ -116,6 +116,12 @@ function locNetwork() {
 	if [ -n "$NEW_SUM" ] && [ "$NEW_SUM" = "$RUN_SUM" ]; then
 		log "[$me] No changes detected"
 	else
+		# ignore any network changes if there is initial configuration
+		local ifcfg=/etc/sysconfig/network-scripts/ifcfg-eth0
+		if [ -f $ifcfg ] && egrep -q '^IPADDR=' $ifcfg ; then
+			log "Network configuration exists in $ifcfg. Quitting."
+			exit 0
+		fi
 		isBooting && command="$1" || command=
 		log "run ${OVERRIDE_DIR}/${me} $command"
 		"${OVERRIDE_DIR}/${me}" $command
@@ -127,26 +133,6 @@ function locNetwork() {
 			mv "$NEW_CTX" "$RUN_CTX"
 			log "($?) mv $NEW_CTX $RUN_CTX"
 		fi
-		# Remove missing aliases
-	    while read -u 4 l; do
-			k="${l%%=*}"
-			[ "${k:0:4}" = "-ETH" ] || continue
-			k="${k#-}"
-			ka=(${k//_/ })
-			[ "${ka[1]:0:5}" = "ALIAS" ] || continue
-			[ "${ka[2]}" = "IP" ] || continue
-			v="${l#*=}"
-			v="${v//[\"\']/}"
-			log "'$l' -> '$v'"
-			curr="$(ip address list | grep "$v/")"
-			iparr=($curr)
-			ethdev="${iparr[${#iparr[*]}-1]}"
-			log "${curr[*]} -- $ethdev"
-			ipaddr="${iparr[1]}"
-			log "removing $ipaddr from $ethdev ..."
-			ip address del "$ipaddr" dev "$ethdev"
-			log "($?) ip address del $ipaddr dev $ethdev"
-		done 4< <(diff -u "$RUN_CTX".old "$RUN_CTX")
 		exit $ret
 	fi
 }
