@@ -11,6 +11,8 @@ ONE_CONTEXT_D=/etc/one-context.d
 CONF=/var/one-context-override
 RUNTIME_DIR="${RUNTIME_DIR:-/var/run/one-context/}"
 
+umask 0077
+
 function getUptime() {
 	local uptime="$(</proc/uptime)"
 	echo "${uptime%%.*}"
