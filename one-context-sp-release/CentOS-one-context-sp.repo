@@ -1,0 +1,9 @@
+# CentOS-one-context-sp.repo
+#
+# Please see https://github.com/storpool/one-context-sp for more information
+
+[centos-one-context-sp]
+name=CentOS-$releasever - one-context-sp
+baseurl=__REPOURL__
+gpgcheck=0
+enabled=1
