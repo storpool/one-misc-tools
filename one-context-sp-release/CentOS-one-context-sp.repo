@@ -6,4 +6,5 @@
 name=CentOS-$releasever - one-context-sp
 baseurl=__REPOURL__
 gpgcheck=0
+repo_gpgcheck=0
 enabled=1
