@@ -1,7 +1,8 @@
-Summary: StorPool contextualization package repository for OpenNebula VMs
 Name: one-context-sp-release
 Version: 1.0
 Release: 0%{?dist}
+Summary: StorPool contextualization package repository for OpenNebula VMs
+Group: System Environment/Base
 License: Apache 2.0
 URL: https://github.com/storpool/one-context-sp
 Source0: CentOS-one-context-sp.repo
@@ -9,17 +10,19 @@ Source1: LICENSE
 
 BuildArch: noarch
 
-Requires: centos-release
-
 %description
 yum configuration for StorPool contextualization package
 for OpenNebula managed VMs.
 
 %prep
-cp %{SOURCE1} .
+%setup -q -c -T
+install -pm 644 %{SOURCE1} .
 
 %install
-install -D -m 644 %{SOURCE0} %{buildroot}%{_sysconfdir}/yum.repos.d/CentOS-one-context-sp.repo
+rm -rf $RPM_BUILD_ROOT
+
+install -dm 755 $RPM_BUILD_ROOT%{_sysconfdir}/yum.repos.d
+install -pm 644 %{SOURCE0} $RPM_BUILD_ROOT%{_sysconfdir}/yum.repos.d
 
 %files
 %defattr(-,root,root)
