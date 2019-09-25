@@ -1,6 +1,6 @@
 Name: one-context-sp-release
 Version: 1.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: StorPool contextualization package repository for OpenNebula VMs
 Group: System Environment/Base
 License: Apache 2.0
@@ -30,9 +30,6 @@ install -pm 644 %{SOURCE0} $RPM_BUILD_ROOT%{_sysconfdir}/yum.repos.d
 install -dm 755 $RPM_BUILD_ROOT%{_sysconfdir}/pki/rpm-gpg
 install -pm 644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pki/rpm-gpg
 
-%post
-rpmkeys --import -- '/etc/pki/rpm-gpg/RPM-GPG-KEY-StorPool-Context'
-
 %files
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/yum.repos.d/CentOS-one-context-sp.repo
@@ -40,6 +37,9 @@ rpmkeys --import -- '/etc/pki/rpm-gpg/RPM-GPG-KEY-StorPool-Context'
 %license LICENSE
 
 %changelog
+* Wed Sep 25 2019 Anton Todorov <a.todorov@storpool.com> - 1.0-2
+- rework gpg key
+
 * Thu Aug 22 2019 Anton Todorov <a.todorov@storpool.com> - 1.0-1
 - add gpg key
 - enable gpgcheck
