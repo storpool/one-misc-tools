@@ -17,5 +17,5 @@ cp one-context-sp-release.spec ~/rpmbuild/SPECS
 
 sed -i "s|__REPOURL__|$REPOURL|g" ~/rpmbuild/SOURCES/CentOS-one-context-sp.repo 
 
-rpmbuild -ba ~/rpmbuild/SPECS/one-context-sp-release.spec
+rpmbuild -ba --define "dist .el${dist:-7}" ~/rpmbuild/SPECS/one-context-sp-release.spec
 

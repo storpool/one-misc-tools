@@ -8,4 +8,4 @@ baseurl=__REPOURL__
 gpgcheck=1
 repo_gpgcheck=0
 enabled=1
-gpgfile=/etc/pki/rpm-gpg/RPM-GPG-KEY-StorPool-Context
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-StorPool-Context
