@@ -41,7 +41,7 @@ STATE = [
 
 def log(args, txt, level=0):
     if txt == '':
-        return 
+        return
     syslog.syslog(pprint.pformat(txt, indent=0, width=1000))
     if level < 1 or args.verbose:
         print('[{}] {}'.format(time.asctime(),txt))
@@ -85,7 +85,7 @@ def oneVmWaitstate(args, state, lcm_state, tout=900):
             log(args, msg, 2)
             raise Exception(msg)
         time.sleep(2)
-    
+
 def oneVmUndeploy(args):
     log(args, "oneVmUndeploy - Request VM Undeploy and wait to complete")
     cmd = ['onevm', 'undeploy']
@@ -350,13 +350,13 @@ def createRemoteVolumes(args, vdata, mdata):
 
             if args.verbose and not args.dry_run:
                 log(args, byid)
-        
+
         new_name = 'RENAMED-{}-{}'.format(name, ts)
         tags = { "nvm": str(args.vmid), "mvts": str(ts) }
         msg = "Rename '{old}' to '{new}' in datastore '{ds}'".format(
                 old=name, new=new_name, ds=vol['REMOTE_DATASTORE']['NAME'])
         log(args, msg, 1)
-        renameVolume(args, name, new_name, 
+        renameVolume(args, name, new_name,
                             vol['REMOTE_DATASTORE']['ENV'], tags)
         if args.dry_run:
             out = dumps({"DRY-RUN":"VolumeCreate:{name}".format(name=name)})
@@ -446,12 +446,12 @@ def oneVmUpdate(args, volumes):
     else:
         log("WARNING! VM history record not updated!"+\
             "Probably the VM will not be re-scheduled...")
-    
+
 def renameVolume(args, old_name, name, env, tags={}, do_raise=False):
     try:
         req = { "rename": name,
                 "tags": tags }
-        cmd = [ 'storpool_req', '--json', dumps(req), 
+        cmd = [ 'storpool_req', '--json', dumps(req),
                 '-P', 'VolumeUpdate', old_name ]
         log(args, ' '.join(cmd), 1)
         if args.dry_run:
