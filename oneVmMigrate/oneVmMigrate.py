@@ -383,6 +383,16 @@ def onedbChangeBody(args, xpath, data):
         out = run_cmd(args, cmd)
     log(args, out, 1)
 
+def onedbChangeBodyDelete(args, xpath):
+    cmd = ['onedb', 'change-body', 'vm', '--id', str(args.vmid),
+            xpath, '--delete']
+    log(args, ' '.join(cmd), 1)
+    if args.dry_run:
+        out = dumps({"DRY-RUN": "{x} to {v}".format(x=xpath, v=data)})
+    else:
+        out = run_cmd(args, cmd)
+    log(args, out, 1)
+
 def onedbChangeHistory(args, seq, xpath, data):
     cmd = ['onedb', 'change-history', '--id', str(args.vmid),
             '--seq',str(seq), xpath, str(data)]
@@ -410,7 +420,11 @@ def oneVmUpdate(args, volumes):
             xpath = "/VM/TEMPLATE/DISK[DISK_ID={}]/CLUSTER_ID"\
                     .format(val['DISK_ID'])
             onedbChangeBody(args, xpath, new_cid)
-    
+
+    for key in ["SCHED_DS_REQUIREMENTS", "SCHED_REQUIREMENTS"]:
+        xpath = "/VM/USER_TEMPLATE/{}".format(key)
+        onedbChangeBodyDelete(args, xpath)
+
     history_seq = -1
     history_ds = -1
     sysdsid = -1

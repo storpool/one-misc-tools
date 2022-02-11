@@ -90,3 +90,15 @@ HISTORY/DS_ID | $DESTINATION_SYSTEM_DS_ID
 onedb change-history --id ${VM_ID} --seq ${LAST_SEQ} "HISTORY/DS_ID" "${DESTINATION_SYSTEM_DS_ID}"
 ```
 
+The following XPATH elements are deleted:
+
+```
+/VM/USER_TEMPLATE/SCHED_DS_REQUIREMENTS
+/VM/USER_TEMPLATE/SCHED_REQUIREMENTS
+```
+
+```bash
+onedb change-body vm --id ${VM_ID} "/VM/USER_TEMPLATE/SCHED_DS_REQUIREMENTS" --delete
+onedb change-body vm --id ${VM_ID} "/VM/USER_TEMPLATE/SCHED_REQUIREMENTS" --delete
+```
+
