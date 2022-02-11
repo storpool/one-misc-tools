@@ -288,7 +288,7 @@ def migrateVolumes(args, volumes, stage, tout=3600):
         snaps = loads(out)
         recovering = {}
         for snap in snaps:
-            recovering[snap['globalId']] = snap['recoveringFromRemote']
+            recovering[snap['backupOfGlobalId']] = snap['recoveringFromRemote']
         for name in res['backups']:
             remoteid = res['backups'][name]['remoteId']
             if remoteid in recovering:
@@ -331,7 +331,7 @@ def createRemoteVolumes(args, vdata, mdata):
                 out = run_cmd(args, cmd, vol['REMOTE_DATASTORE']['ENV'])
                 snaps = loads(out)
                 for s in snaps:
-                    gid = s['globalId']
+                    gid = s['backupOfGlobalId']
                     if gid in byid:
                         msg = "{} -> {}" .format(
                             "globalId:{} name:{}".format(gid, byid[gid]),
