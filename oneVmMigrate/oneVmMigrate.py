@@ -390,7 +390,7 @@ def onedbChangeBodyDelete(args, xpath):
             xpath, '--delete']
     log(args, ' '.join(cmd), 1)
     if args.dry_run:
-        out = dumps({"DRY-RUN": "{x} to {v}".format(x=xpath, v=data)})
+        out = dumps({"DRY-RUN": "{x} Delete".format(x=xpath)})
     else:
         out = run_cmd(args, cmd)
     log(args, out, 1)
