@@ -4,16 +4,18 @@ oneVmMigrate
 Tool for (offline) migrating ONE VM's to other StorPool Cluster, managed by single OpenNebula controler (two separate Clusters in OpenNebula)
 
 ```
-Usage: oneVmMigrate.py [-h] [-N] [-s] [-v] [-f] vmid
+Usage: oneVmMigrate.py [-h] [-N] [-s] [-v] [-f] [-t [<seconds>]] vmid cid
 
   vmid - OpenNebula's VM ID of the VM to migrate (number)
+  cid  - Cluster ID to migrate the VM to (number)
 
 Optional arguments:
 
- -N, --dry-run      - Do nothing, only print what will be done
- -s, --skip-resume  - Do not resume after migrate
- -v, --verbose      - Be verbose
- -f, --force        - Do hard VM Undeploy instead of waiting for graceful
+ -N, --dry-run          - Do nothing, only print what will be done
+ -s, --skip-resume      - Do not resume after migrate
+ -t, --snapshot-timeout - Send pre-snapshot, wait to complete(default: 3600sec)
+ -v, --verbose          - Be verbose
+ -f, --force            - Do hard VM Undeploy instead of waiting for graceful shutdown
 ```
 
 Installing dependancies
@@ -29,7 +31,7 @@ OpenNebula configuration
 
 Add the following atributes to the Datastore Template(s)
 
-  * _SP_REMOTE_     - remote cluster location
+  * _SP_REMOTE_     - remote cluster location for the Datastore (where to migrate)
   * _SP_LOCATION_   - the location of the StorPool cluster that the Datastore belongs to
 
 

@@ -257,9 +257,13 @@ def diskVolumes(args, vm):
     log(args, volumes, 1)
     return volumes
 
-def migrateVolumes(args, volumes, stage, tout=3600):
+def migrateVolumes(args, volumes, stage):
     location = None
-    log(args, "{} - Transfer snapshots (waiting to complete)".format(stage))
+    tout = args.snapshot_timeout
+    msg = "{} - Transfer snapshots".format(stage)
+    if tout > 0:
+        msg += "(waiting to complete)"
+    log(args, msg)
 
     req = {"location":location,
              "tags":{"nvm":args.vmid, "cpts":time.time()},
@@ -282,6 +286,8 @@ def migrateVolumes(args, volumes, stage, tout=3600):
     res = loads(out)
     # wait for the volumes...
     timeout = time.time() + tout
+    if tout < 1:
+        timeout = timeout + 12
     transferred = {}
     while True:
         all_found = True
@@ -295,7 +301,8 @@ def migrateVolumes(args, volumes, stage, tout=3600):
             remoteid = res['backups'][name]['remoteId']
             if remoteid in recovering:
                 if recovering[remoteid]:
-                    all_found = False
+                    if tout > 0:
+                        all_found = False
                     msg = "SnapshotId '{}' for Volume {} remote {} still recovering"\
                             .format(remoteid, name, location)
                     log(args, msg)
@@ -316,7 +323,7 @@ def migrateVolumes(args, volumes, stage, tout=3600):
             msg = "Timed out waiting for snapshots"
             log(args, msg, 2)
             raise RuntimeError(msg)
-        time.sleep(3)
+        time.sleep(2)
     return res
 
 def createRemoteVolumes(args, vdata, mdata):
@@ -492,8 +499,9 @@ if __name__ == '__main__':
                         help="be verbose")
     parser.add_argument("-f", "--force", action="store_true",
                         help="be hard")
-#    parser.add_argument("-t", "--undeploy-timeout", action="store_const",
-#                        default=60, help="undeploy timeout in seconds")
+    parser.add_argument("-t", "--snapshot-timeout", action="store",
+                        const=3600, default=0, nargs='?', type=int,
+                        help="snapshot(s) transfer timeout in seconds")
     parser.add_argument("vmid",type=int,help="ID of the VM to migrate")
     parser.add_argument("cluster_id", type=int,
                         help="destination cluster")
@@ -527,11 +535,11 @@ if __name__ == '__main__':
                 msg += " UNDEPLOYED or ACTIVE expected."
                 log(args, msg)
                 exit(1)
-
-            migrated = migrateVolumes(args, spVolumes, 'pre-snapshot', 3600)
+            if args.snapshot_timeout > 0:
+                migrated = migrateVolumes(args, spVolumes, 'pre-snapshot')
             oneVmUndeploy(args)
 
-        migrated = migrateVolumes(args, spVolumes, 'last-snapshot', 3600)
+        migrated = migrateVolumes(args, spVolumes, 'last-snapshot')
 
         try:
             createRemoteVolumes(args, spVolumes, migrated['backups'])
