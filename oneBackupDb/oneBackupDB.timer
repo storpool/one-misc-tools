@@ -1,0 +1,14 @@
+[Unit]
+Description=Timer trigger for oneBackupDB.service
+Requires=oneBackupDB.service
+
+[Timer]
+Unit=oneBackupDB.service
+Persistent=true
+AccuracySec=1h
+# daily
+OnCalendar=*-*-* 00:00:00
+
+[Install]
+WantedBy=timers.target
+

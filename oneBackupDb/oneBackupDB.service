@@ -1,0 +1,11 @@
+[Unit]
+Description=Create database backups for OpenNebula DB
+Wants=oneBackupDB.timer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/storpool/oneBackupDB.sh
+
+[Install]
+WantedBy=multi-user.target
+

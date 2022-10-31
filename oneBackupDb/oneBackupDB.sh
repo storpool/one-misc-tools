@@ -1,11 +1,8 @@
 #!/bin/bash
-
-#set -x
+#
+# (c) StorPool
 
 set -e -o pipefail
-
-BACKUP_PATH="/var/lib/one/db_backup"
-COMPRESS=xz
 
 declare -A oneconf
 tmp="$(grep "DB=" ~oneadmin/config | cut -d= -f2-)"
@@ -19,7 +16,7 @@ done
 
 [ "${oneconf[BACKEND],,}" = "mysql"  ] || exit
 
-CONF_FILE="/etc/${0##*/}.conf"
+CONF_FILE="/etc/storpool/oneBackupDB.conf"
 if [ -f "$CONF_FILE" ]; then
     source "$CONF_FILE"
 fi
@@ -34,6 +31,9 @@ function log()
 
 umask 0077
 export PATH=/bin:/usr/bin:/sbin:/usr/sbin:$PATH
+
+BACKUP_PATH="${BACKUP_PATH:-/var/lib/one/db_backup}"
+COMPRESS="${COMPRESS:-xz}"
 
 d=($(date +"%Y %m %d %H %M %S"))
 
@@ -52,7 +52,8 @@ cat >"$MY_CNF" <<EOF
 user=${oneconf[USER]}
 password=${oneconf[PASSWD]}
 EOF
-opts=" --defaults-file=$MY_CNF"
+opts=" --host=${oneconf[SERVER]:-localhost}"
+[ -n "$SKIP_DEFAULTS_FILE" ] || opts+=" --defaults-file=$MY_CNF"
 opts+=" --single-transaction"
 opts+=" --create-options"
 opts+=" --complete-insert"
@@ -60,7 +61,6 @@ opts+=" --dump-date"
 opts+=" --extended-insert"
 #opts+=" --flush-logs"
 opts+=" --force"
-opts+=" --host=${oneconf[SERVER]:-localhost}"
 opts+=" ${oneconf[DB_NAME]:-opennebula}"
 
 tstart=$(date +%s)
