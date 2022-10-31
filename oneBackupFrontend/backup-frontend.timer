@@ -1,0 +1,14 @@
+[Unit]
+Description=Timer trigger for backup-frontend.service
+Requires=backup-frontend.service
+
+[Timer]
+Unit=backup-frontend.service
+Persistent=true
+AccuracySec=1h
+# hourly
+OnCalendar=*-*-* *:00:00
+
+[Install]
+WantedBy=timers.target
+

@@ -1,0 +1,11 @@
+[Unit]
+Description=Create backup snapshot of the StorPoolvolume
+Wants=backup-frontend.timer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/storpool/backup-frontend.sh
+
+[Install]
+WantedBy=multi-user.target
+
