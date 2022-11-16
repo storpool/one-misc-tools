@@ -9,9 +9,10 @@ for the older ones.
 ```bash
 sudo mkdir -p /etc/storpool
 sudo cp oneBackupDB.conf  /etc/storpool/
+sudo chmod 0640 /etc/storpool/oneBackupDB.conf
 mkdir -p /usr/lib/storpool
 sudo cp oneBackupDB.sh /usr/lib/storpool/
-sudo chmod a+x /usr/lib/storpool/oneBackupDB.sh
+sudo chmod 0755 /usr/lib/storpool/oneBackupDB.sh
 sudo cp oneBackupDB.{timer,service} /etc/systemd/system
 sudo systemdtl daemon-reload
 sudo systemctl enable oneBackupDB.timer
