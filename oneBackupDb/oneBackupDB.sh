@@ -52,8 +52,9 @@ cat >"$MY_CNF" <<EOF
 user=${oneconf[USER]}
 password=${oneconf[PASSWD]}
 EOF
-opts=" --host=${oneconf[SERVER]:-localhost}"
+opts=
 [ -n "$SKIP_DEFAULTS_FILE" ] || opts+=" --defaults-file=$MY_CNF"
+opts+=" --host=${oneconf[SERVER]:-localhost}"
 opts+=" --single-transaction"
 opts+=" --create-options"
 opts+=" --complete-insert"
