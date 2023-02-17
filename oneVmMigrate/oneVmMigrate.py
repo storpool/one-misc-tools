@@ -495,6 +495,8 @@ if __name__ == '__main__':
                         help="do nothing")
     parser.add_argument("-s", "--skip-resume", action="store_true",
                         help="do not resume after migrate")
+    parser.add_argument("-n", "--snapshot-only", action="store_true",
+                        help="Only send backup snapshots")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="be verbose")
     parser.add_argument("-f", "--force", action="store_true",
@@ -527,6 +529,12 @@ if __name__ == '__main__':
                 clData[args.cluster_id]['NAME']))
 
         spVolumes = diskVolumes(args, vmData)
+
+        if args.snapshot_only:
+            snapshots = migrateVolumes(args, spVolumes, 'send-snapshots')
+            pp(snapshots)
+            print("END - only backup snapshots are sent")
+            exit(0)
 
         if vmData['VM_STATE'] != 'UNDEPLOYED:LCM_INIT':
             if vmData['VM_STATE'] not in ['ACTIVE:RUNNING', 'POWEROFF:LCM_INIT']:
