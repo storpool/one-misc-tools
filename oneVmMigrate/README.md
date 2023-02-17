@@ -4,7 +4,7 @@ oneVmMigrate
 Tool for (offline) migrating ONE VM's to other StorPool Cluster, managed by single OpenNebula controler (two separate Clusters in OpenNebula)
 
 ```
-Usage: oneVmMigrate.py [-h] [-N] [-s] [-v] [-f] [-t [<seconds>]] vmid cid
+Usage: oneVmMigrate.py [-h] [-N] [-n] [-s] [-v] [-f] [-t [<seconds>]] vmid cid
 
   vmid - OpenNebula's VM ID of the VM to migrate (number)
   cid  - Cluster ID to migrate the VM to (number)
@@ -12,6 +12,7 @@ Usage: oneVmMigrate.py [-h] [-N] [-s] [-v] [-f] [-t [<seconds>]] vmid cid
 Optional arguments:
 
  -N, --dry-run          - Do nothing, only print what will be done
+ -n, --snapshot-only    - Only send snapshots to the remote location
  -s, --skip-resume      - Do not resume after migrate
  -t, --snapshot-timeout - Send pre-snapshot, wait to complete(default: 3600sec)
  -v, --verbose          - Be verbose
