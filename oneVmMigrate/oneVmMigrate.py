@@ -479,7 +479,7 @@ def renameSourceVolumes(args, vdata):
     ts = time.time()
     for name, vol in vdata.iteritems():
         new_name = 'MIGRATED-{}-{}'.format(name,ts)
-        tags = {"nvm": str(args.vmid), "mvts": str(ts)}
+        tags = {"nvm": str(args.vmid), "mvts": str(ts), "vc-policy": "no"}
         msg = "Rename '{old}' to '{new}', Datastore '{ds}'".format(
                 old=name, new=new_name, ds=vol['LOCAL_DATASTORE']['NAME'])
         log(args, msg, 1)
