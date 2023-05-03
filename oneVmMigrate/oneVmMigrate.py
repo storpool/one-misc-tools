@@ -505,7 +505,8 @@ if __name__ == '__main__':
                         const=3600, default=0, nargs='?', type=int,
                         help="snapshot(s) transfer timeout in seconds")
     parser.add_argument("-p", "--one-px", action="store",
-                        default="one", nargs='?', type=str,
+                        default=environ.get("ONE_PX", "one"),
+                        nargs='?', type=str,
                         help="Object preffix in StorPool, string")
     parser.add_argument("vmid",type=int,help="ID of the VM to migrate")
     parser.add_argument("cluster_id", type=int,
