@@ -1,7 +1,7 @@
 oneVmMigrate
 ===============================================================================
 
-Tool for (offline) migrating ONE VM's to other StorPool Cluster, managed by single OpenNebula controler (two separate Clusters in OpenNebula)
+Tool for (offline) migrating ONE VM's to other StorPool Cluster, managed by single OpenNebula controller (two separate Clusters in OpenNebula)
 
 ```
 Usage: oneVmMigrate.py [-h] [-N] [-n] [-s] [-v] [-f] [-t [<seconds>]] vmid cid
@@ -40,7 +40,7 @@ Add the following atributes to the Datastore Template(s)
 Naming convention
 -------------------------------------------------------------------------------
 
-* pre-snapshots - An anonymous snapshots are ceated with the following tags:
+* pre-snapshots - An anonymous snapshots are created with the following tags:
      
     * _nvm_    - VM ID
     * _cpts_   - Timestamp
@@ -52,7 +52,7 @@ And the following tags are set:
     * _mvts_   - Timestamp
 
 * backup source Volume(s) - After successful migration the Volume(s) on the source datastore are renamed _MIGRATED-{originalName}-{timestamp}'_
-And folling tags are set:
+And following tags are set:
 
     * _nvm_    - VM ID
     * _mvts_   - Timestamp
