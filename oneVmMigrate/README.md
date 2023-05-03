@@ -15,6 +15,7 @@ Optional arguments:
  -n, --snapshot-only    - Only send snapshots to the remote location
  -s, --skip-resume      - Do not resume after migrate
  -t, --snapshot-timeout - Send pre-snapshot, wait to complete(default: 3600sec)
+ -p, --one-px           - StorPool elements preffix to use instead the default 'one'
  -v, --verbose          - Be verbose
  -f, --force            - Do hard VM Undeploy instead of waiting for graceful shutdown
 ```

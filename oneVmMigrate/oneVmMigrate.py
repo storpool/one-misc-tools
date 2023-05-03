@@ -225,15 +225,15 @@ def diskVolumes(args, vm):
     volumes = {}
     for disk in vm['DISKS']:
         if 'CLONE' not in disk:
-            name = "one-sys-{}-{}-raw".format(
-                    vm['ID'], disk['DISK_ID'])
-            source = "one-ds-{}".format(disk['DATASTORE_ID'])
+            name = "{}-sys-{}-{}-raw".format(
+                    args.one_px, vm['ID'], disk['DISK_ID'])
+            source = "{}-ds-{}".format(args.one_px, disk['DATASTORE_ID'])
         elif disk['CLONE'] == 'YES' or disk['DISK_TYPE'] == 'CDROM':
-            name = "one-img-{}-{}-{}".format(
-                    disk['IMAGE_ID'], vm['ID'], disk['DISK_ID'])
+            name = "{}-img-{}-{}-{}".format(
+                    args.one_px, disk['IMAGE_ID'], vm['ID'], disk['DISK_ID'])
             source = disk['SOURCE']
         else:
-            name = "one-img-{}".format(disk['IMAGE_ID'])
+            name = "{}-img-{}".format(args.one_px, disk['IMAGE_ID'])
             source = disk['SOURCE']
         dsid = disk['DATASTORE_ID']
         volumes[name] = {
@@ -371,7 +371,7 @@ def createRemoteVolumes(args, vdata, mdata):
             out = dumps({"DRY-RUN":"VolumeCreate:{name}".format(name=name)})
         else:
             remote_ds = vol['REMOTE_DATASTORE']
-            template = "one-ds-{ds}".format(ds=remote_ds['ID'])
+            template = "{}-ds-{}".format(args.one_px, remote_ds['ID'])
             parent = byid[mdata[name]['remoteId']]
             req = {"name": name, "parent": parent, "template": template,
                             "tags": {"nvm": args.vmid}}
@@ -504,6 +504,9 @@ if __name__ == '__main__':
     parser.add_argument("-t", "--snapshot-timeout", action="store",
                         const=3600, default=0, nargs='?', type=int,
                         help="snapshot(s) transfer timeout in seconds")
+    parser.add_argument("-p", "--one-px", action="store",
+                        default="one", nargs='?', type=str,
+                        help="Object preffix in StorPool, string")
     parser.add_argument("vmid",type=int,help="ID of the VM to migrate")
     parser.add_argument("cluster_id", type=int,
                         help="destination cluster")
