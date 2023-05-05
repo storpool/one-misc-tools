@@ -228,7 +228,7 @@ def diskVolumes(args, vm):
             name = "{}-sys-{}-{}-raw".format(
                     args.one_px, vm['ID'], disk['DISK_ID'])
             source = "{}-ds-{}".format(args.one_px, disk['DATASTORE_ID'])
-        elif disk['CLONE'] == 'YES' or disk['DISK_TYPE'] == 'CDROM':
+        elif disk['CLONE'] == 'YES' or disk['TYPE'] == 'CDROM':
             name = "{}-img-{}-{}-{}".format(
                     args.one_px, disk['IMAGE_ID'], vm['ID'], disk['DISK_ID'])
             source = disk['SOURCE']
@@ -240,6 +240,7 @@ def diskVolumes(args, vm):
             "VMID":vm['ID'],
             "SOURCE":source,
             "DISK_TYPE":disk['DISK_TYPE'],
+            "TYPE":disk['TYPE'],
             "DISK_ID":disk['DISK_ID'],
             "LOCAL_DATASTORE":dsData[dsid]
             }
