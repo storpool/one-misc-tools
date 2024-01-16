@@ -1,0 +1,21 @@
+NAME = "{name}"
+CPU = "{pcpu}"
+VCPU = "{cpu}"
+MEMORY = "{ram}"
+CPU_MODEL = [
+  MODEL = "host-passthrough" ]
+
+{disk_config}
+
+NIC = [
+  {ip_def}  NETWORK_ID = "{network}" ]
+GRAPHICS = [
+  LISTEN = "0.0.0.0",
+  TYPE = "VNC" ]
+HYPERVISOR = "kvm"
+OS = [
+  BOOT = "disk0" ]
+
+CONTEXT = [
+  NETWORK = "YES",
+  SSH_PUBLIC_KEY = "$USER[SSH_PUBLIC_KEY]" ]
