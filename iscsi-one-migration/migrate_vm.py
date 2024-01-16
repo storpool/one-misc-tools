@@ -118,6 +118,7 @@ def create_vm(images, args):
                 'onevm',
                 'create',
                 template.name,
+                '--hold',
         ]
 
         res = subprocess.run(cmd, capture_output=True, encoding='utf-8')
@@ -181,6 +182,28 @@ def wait_vm_ready(vmid, timeout=60, repeat=3):
     raise TimeoutError
                 
 
+def wait_image_ready(img_id, timeout=60, repeat=3):
+    logging.debug("Waiting image %d to get ready, timeout=%d sec", img_id, timeout)
+    cmd = [ 'oneimage', 'show', '--json', str(img_id) ]
+    started = time.time()
+    while time.time() < started + timeout:
+        time.sleep(repeat)
+        res = subprocess.run(cmd, capture_output=True, encoding='utf-8', check=True)
+        try:
+            out = json.loads(res.stdout)
+            img_state = int(out["IMAGE"]["STATE"])
+            logging.debug("Image %d state is %d", img_id, img_state)
+            if img_state in (1, 8): # READY, USED_PERS
+                logging.debug("Image %d ready", img_id)
+                return
+        except (json.JSONDecodeError, ValueError, KeyError) as e:
+            logging.debug("Unknown error: %s", e.msg)
+            continue
+    
+    logging.error("Timeout waiting Image %d", img_id)
+    raise TimeoutError
+
+
 def copy_images(images, args):
     logging.debug("Copy images on host: %s, images: %s", args.host, images)
 
@@ -225,7 +248,7 @@ def start_vm(vmid):
     logging.debug("Starting VM %d", vmid)
     cmd = [
             'onevm',
-            'resume',
+            'release',
             str(vmid),
     ]
     res = subprocess.run(cmd, check=True)
@@ -266,9 +289,9 @@ def parse_args():
             help="Size of the disk in GiB. Shall be specified one per each disk. "
             "The number and order shall match the --disk-source items.");
     parser.add_argument('--disk-source', required=True, action="append",
-            help="Source image IQN and LUN. Shall be specified one per each disk. "
+            help="Source image IQN. Shall be specified one per each disk. "
             "The number and the order shall match the --disk-size items. "
-            "Example: 'iqn.example.com:volume1-lun-0'");
+            "Example: 'iqn.example.com:volume1'");
     parser.add_argument('--host', required=True,
             help="Transfer host. This is the host that will perform the actual "
             "transfer of the image content.")
@@ -301,10 +324,8 @@ def main():
     chown_img(images, args)
     vmid = create_vm(images, args)
     chown_vm(vmid, args)
-    wait_vm_ready(vmid)
-    poweroff_vm(vmid)
+    wait_image_ready(images[-1])
     copy_images(images, args)
-    wait_vm_ready(vmid)
     start_vm(vmid)
 
 

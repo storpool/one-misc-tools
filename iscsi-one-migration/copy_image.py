@@ -84,6 +84,7 @@ def copy(src, dest):
         "if=" + src,
         "of=" + dest,
         "bs=1M",
+        "iflag=direct",
         "oflag=direct",
         ], check=True)
     finish_time = time.time()
